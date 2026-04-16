@@ -1,95 +1,77 @@
-# tanvrit/storage
+# tanvrit-sdk · storage
 
-Persistent key-value and blob storage abstraction over platform-native backends.
+> Hybrid SQLite + in-memory cache layer for offline-first data persistence across all KMP targets.
 
-## Supported Targets
-
-| Target | Artifact suffix | Notes |
-|--------|----------------|-------|
-| Android | `-android` | minSdk 24+ |
-| iOS arm64 (device) | `-iosarm64` | Native |
-| iOS x64 (simulator, Intel) | `-iosx64` | Native |
-| iOS Simulator arm64 | `-iossimulatorarm64` | Native |
-| JVM (Ktor server / desktop) | `-jvm` | Java 11+ |
-| WasmJS | `-wasmjs` | Experimental |
-| JS (IR) | `-js` | Experimental |
-
-## Prerequisites
-
-This module depends on: [core](https://github.com/tanvrit/core).
-
-Add those modules to your build before adding `storage`.
+[![Maven](https://img.shields.io/badge/maven.tanvrit.com-1.0.12-blue)](https://maven.tanvrit.com)
+![KMP](https://img.shields.io/badge/Kotlin_Multiplatform-8_targets-blueviolet)
 
 ## Install
 
-Add the GitHub Packages repository to your `settings.gradle.kts`:
+### Option A — Tanvrit Gradle plugin _(recommended)_
 
 ```kotlin
-maven {
-    url = uri("https://maven.pkg.github.com/tanvrit/storage")
-    credentials {
-        username = (project.findProperty("gpr.user") as String?) ?: System.getenv("GITHUB_ACTOR") ?: ""
-        password = (project.findProperty("gpr.key") as String?) ?: System.getenv("GITHUB_TOKEN") ?: ""
+// settings.gradle.kts
+pluginManagement {
+    repositories { maven { url = uri("https://maven.tanvrit.com") } }
+}
+```
+
+```kotlin
+// build.gradle.kts
+plugins { id("com.tanvrit.sdk") version "1.0.12" }
+
+tanvrit {
+    version = "1.0.12"
+    modules = listOf("storage")
+}
+```
+
+### Option B — Direct dependency
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories { maven { url = uri("https://maven.tanvrit.com") } }
+}
+```
+
+```kotlin
+// build.gradle.kts  (KMP)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("com.tanvrit:storage:1.0.12")
+        }
     }
 }
 ```
 
-Add the dependency:
+## Targets
+
+| Platform | Artifact |
+|----------|----------|
+| Android | `storage-android` |
+| Iosarm64 | `storage-iosarm64` |
+| Iossimulatorarm64 | `storage-iossimulatorarm64` |
+| Iosx64 | `storage-iosx64` |
+| Jvm | `storage-jvm` |
+| Js | `storage-js` |
+| Wasm Js | `storage-wasm-js` |
+| Linuxx64 | `storage-linuxx64` |
+
+## Quick start
 
 ```kotlin
-// JVM / Ktor server / desktop
-implementation("com.tanvrit:storage-jvm:0.0.2")
-
-// Android
-implementation("com.tanvrit:storage-android:0.0.2")
-
-// KMP commonMain
-implementation("com.tanvrit:storage:0.0.2")
-```
-
-## GitHub Packages Authentication
-
-GitHub Packages requires a token even for public packages.
-
-1. Create a [GitHub Personal Access Token](https://github.com/settings/tokens) with `read:packages` scope.
-2. Add to `~/.gradle/gradle.properties`:
-
-```properties
-# ~/.gradle/gradle.properties
-gpr.user=YOUR_GITHUB_USERNAME
-gpr.key=YOUR_GITHUB_PAT_WITH_READ_PACKAGES
-```
-
-## Koin Setup
-
-Register the module with Koin at application start:
-
-```kotlin
-import org.koin.core.context.startKoin
-import com.tanvrit.storage.di.StorageModule
-
-startKoin {
-    modules(StorageModule())
+// Tables extend DatabaseTable<T> for typed read/write
+class ProductTable : DatabaseTable<Product>("products") {
+    suspend fun saveProduct(p: Product) = store(p)
+    suspend fun getProduct(id: String): Product? = loadById(id)
+    suspend fun allProducts(): List<Product> = loadAll()
 }
 ```
 
-## Quick Start
+## Resources
 
-```kotlin
-// Get the shared network client (Koin must be started first)
-val network = StorageNetwork.shared()
-```
-
-## Version & Changelog
-
-Current version: **0.0.2**
-
-See [Releases](https://github.com/tanvrit/storage/releases) for the full changelog.
-
----
-
-## Part of the Tanvrit SDK
-
-This module is part of the [Tanvrit Platform](https://tanvrit.com).
-
-All SDK modules: [`core`](https://github.com/tanvrit/core) · [`storage`](https://github.com/tanvrit/storage) · [`auth`](https://github.com/tanvrit/auth) · [`business`](https://github.com/tanvrit/business) · [`commerce`](https://github.com/tanvrit/commerce) · [`communication`](https://github.com/tanvrit/communication) · [`social`](https://github.com/tanvrit/social) · [`ui`](https://github.com/tanvrit/ui) · [`commerceui`](https://github.com/tanvrit/commerceui) · [`commerceapp`](https://github.com/tanvrit/commerceapp)
+- **Full SDK source:** [tanvrit/sdk](https://github.com/tanvrit/sdk)
+- **All modules:** [maven.tanvrit.com](https://maven.tanvrit.com)
+- **Issues:** [tanvrit/sdk/issues](https://github.com/tanvrit/sdk/issues)
